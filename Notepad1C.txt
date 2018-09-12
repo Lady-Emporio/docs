@@ -3174,6 +3174,8 @@ CHECK    (comm < .15 OR city = 'Barcelona'));
 _task INTEGER REFERENCES task(id),
 Select EXISTS(select 1 from task where id=1);//Предикат EXISTS принимает значение TRUE, если подзапрос содержит любое количество строк
 CREATE TABLE IF NOT EXISTS MainTable
+COUNT(DISTINCT model)
+
 
 HAVING -условие применяющееся после группировки{
 select c_no,count(*),max(s_id) from exams GROUP BY c_no HAVING max(s_id)>1500;	
@@ -3602,6 +3604,54 @@ INSERT INTO connect_every_week(_task,_date) VALUES (4,'Thursday');
 select * from connect_every_week;
 }
 
+WITH /*аналог вложенного запроса типо вт*/ Common Table Expressions {
+	WITH cte_name (column_list) AS
+    (anchor_member
+     UNION ALL
+     recursive_member)
+     outer_query
+///////////////////////
+SELECT SalesOrderID
+    FROM Sales.SalesOrderHeader
+    WHERE TotalDue > (SELECT AVG(TotalDue)
+                      FROM Sales.SalesOrderHeader
+                      WHERE YEAR(OrderDate) = '2005')
+        AND Freight > (SELECT AVG(TotalDue)
+                       FROM Sales.SalesOrderHeader
+                       WHERE YEAR(OrderDate) = '2005')/2.5;
+//Тут по сути одна и та же таблица используется два раза. Ей можно вынести:
+WITH price_calc(year_2005) AS
+    (SELECT AVG(TotalDue)
+        FROM Sales.SalesOrderHeader
+        WHERE YEAR(OrderDate) = '2005')
+    SELECT SalesOrderID
+        FROM Sales.SalesOrderHeader
+        WHERE TotalDue > (SELECT year_2005 FROM price_calc)
+            AND Freight > (SELECT year_2005 FROM price_calc)/2.5;
+//И можем использовать.
+Параметр cte_name представляет имя OTB, которое определяет результирующую таблицу, 
+Параметр column_list - список столбцов табличного выражения. (В примере выше OTB называется price_calc и имеет один столбец - year_2005.)
+Параметр inner_query представляет инструкцию SELECT, которая определяет результирующий набор соответствующего табличного выражения. 
+После этого определенное табличное выражение можно использовать во внешнем запросе outer_query.
+//Работает, проверил:
+with rty(l_r) as (select Min(ram) from pc )
+SELECT l_r FROM rty
+}
+
+CREATE TEMP TABLE my_fist_temp_table(fields_list)
+INSERT INTO my_fist_temp_table (fields_list) SELECT fields_list FROM table_src
+
+INTERSECT [ALL] (пересечение)
+EXCEPT [ALL] (разность)
+
+Соединение может быть либо внутренним (INNER), либо одним из внешних (OUTER).
+Служебные слова INNER и OUTER можно опускать, поскольку внешнее соединение однозначно определяется его типом — LEFT (левое), RIGHT (правое) или FULL (полное), а просто JOIN будет означать внутреннее соединение.
+
+INNER JOIN или просто JOIN : попадут только те соединения строк двух таблиц, для которых значение предиката равно TRUE. 
+LEFT JOIN означает, что помимо строк, для которых выполняется условие предиката, в результирующий набор попадут все остальные строки из первой таблицы (левой). При этом отсутствующие значения столбцов из правой таблицы будут заменены NULL-значениями.
+При полном соединении (FULL JOIN) в результирующую таблицу попадут не только те строки, которые имеют одинаковые значения в сопоставляемых столбцах, но и все остальные строки исходных таблиц, не имеющие соответствующих значений в другой таблице. В этих строках все столбцы той таблицы, в которой не было найдено соответствия, заполняются NULL-значениями. То есть полное соединение представляет собой комбинацию левого и правого внешних соединений. Каждая строка одной таблицы соединяется с каждой строкой другой таблицы по выбранному условию. Могут быть дубли.
+
+Полное соединение может находиться в том же месте, где м объединить. - сверху вложенный запрос, снизу вложенный запрос, между ними соединение, а под вторым запросом условие соединения.
 }
 
 Формы для ввода значений автоматические (Функции для вызова диалога ввода данных){
