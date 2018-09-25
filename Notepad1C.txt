@@ -3184,6 +3184,13 @@ Select EXISTS(select 1 from task where id=1);//Предикат EXISTS прин�
 CREATE TABLE IF NOT EXISTS MainTable
 COUNT(DISTINCT model)
 
+CASE{
+CASE 
+	WHEN price IS NULL 
+	THEN 'Нет в наличии' 
+ELSE CAST(price AS CHAR(20)) 
+END price 
+}
 
 HAVING -условие применяющееся после группировки{
 select c_no,count(*),max(s_id) from exams GROUP BY c_no HAVING max(s_id)>1500;	
